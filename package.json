@@ -1,0 +1,19 @@
+{
+    "name": "web-crawler",
+    "version": "1.0.0",
+    "description": "For boot.dev course",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js",
+        "test": "jest",
+        "test:watch": "jest --watchAll"
+    },
+    "author": "Rogerio Romao",
+    "license": "ISC",
+    "devDependencies": {
+        "jest": "^29.7.0"
+    },
+    "dependencies": {
+        "jsdom": "^24.0.0"
+    }
+}

@@ -2,7 +2,7 @@ const { argv } = require('node:process');
 
 const { crawlPage } = require('./crawl');
 
-function main() {
+async function main() {
     if (argv.length < 3) {
         console.error('No URL provided');
         process.exit(1);
@@ -13,7 +13,9 @@ function main() {
     }
     const url = argv[2];
 
-    crawlPage(url);
+    const pages = await crawlPage(url, url, {});
+    console.log(JSON.stringify(pages, null, 4));
+    process.exit(0);
 }
 
 main();

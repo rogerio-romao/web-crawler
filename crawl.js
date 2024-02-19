@@ -44,12 +44,31 @@ function getURLsFromHTML(htmlBody, baseURL) {
     return mappedLinks;
 }
 
-async function crawlPage(url) {
-    console.log(`Crawling ${url}...`);
+async function crawlPage(baseURL, currentURL, pages) {
+    // GUARDS
+    const baseURLDomain = new URL(baseURL).hostname;
+    const currentURLDomain = new URL(currentURL).hostname;
+    if (baseURLDomain !== currentURLDomain) {
+        console.error('Base and Current URLs do not belong to the same domain');
+        return pages;
+    }
+
+    const normalizedURL = normalizeURL(currentURL);
+    if (pages[normalizedURL]) {
+        pages[normalizedURL]++;
+        return pages;
+    } else if (normalizedURL !== baseURL) {
+        pages[normalizedURL] = 1;
+    } else {
+        pages[normalizedURL] = 0;
+    }
+
+    console.log(`Crawling ${normalizedURL}...`);
 
     // Fetch the page
+    let html = '';
     try {
-        const response = await fetch(url);
+        const response = await fetch(currentURL);
         if (!response.ok) {
             throw new Error(`Failed to fetch page: ${response.status}`);
         }
@@ -57,12 +76,27 @@ async function crawlPage(url) {
         if (!contentType.includes('text/html')) {
             throw new Error('Not an HTML page');
         }
-        const html = await response.text();
-        console.log(html);
+        html = await response.text();
     } catch (error) {
-        console.error(`Failed to crawl ${url}: ${error.message}`);
+        console.error(`Failed to crawl ${currentURL}: ${error.message}`);
         return;
     }
+
+    // Get the links
+    try {
+        const links = getURLsFromHTML(html, baseURL);
+        for (const link of links) {
+            await crawlPage(baseURL, link, pages);
+        }
+    } catch (error) {
+        console.error(
+            `Failed to get links from ${normalizedURL}: ${error.message}`
+        );
+        return;
+    }
+
+    console.log(`Crawling ${normalizedURL} complete`);
+    return pages;
 }
 
 module.exports = {
